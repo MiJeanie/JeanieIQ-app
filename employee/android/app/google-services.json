@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "586726960013",
+    "project_id": "jeanieiq-apps",
+    "storage_bucket": "jeanieiq-apps.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:586726960013:android:2e9db81ab498b578132bc4",
+        "android_client_info": {
+          "package_name": "com.jeanieiq.employee"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA5mDicFBd_10TeTM5YH4ClsONa6vTuqSg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:586726960013:android:fab89f2507712941132bc4",
+        "android_client_info": {
+          "package_name": "com.jeanieiq.locum"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA5mDicFBd_10TeTM5YH4ClsONa6vTuqSg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
