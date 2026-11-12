@@ -1,0 +1,17 @@
+{
+  "appId": "com.jeanieiq.employee",
+  "appName": "JeanieIQ Employee",
+  "webDir": "www",
+  "server": {
+    "url": "https://main.dev.jeanieiq.com/employee",
+    "cleartext": false
+  },
+  "android": {
+    "allowMixedContent": false,
+    "backgroundColor": "#0A1F44"
+  },
+  "ios": {
+    "contentInset": "never",
+    "backgroundColor": "#0A1F44"
+  }
+}

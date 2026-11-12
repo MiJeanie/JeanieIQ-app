@@ -1,0 +1,17 @@
+{
+  "appId": "com.jeanieiq.locum",
+  "appName": "JeanieIQ Locum",
+  "webDir": "www",
+  "server": {
+    "url": "https://main.dev.jeanieiq.com/locum",
+    "cleartext": false
+  },
+  "android": {
+    "allowMixedContent": false,
+    "backgroundColor": "#0f172a"
+  },
+  "ios": {
+    "contentInset": "never",
+    "backgroundColor": "#0f172a"
+  }
+}

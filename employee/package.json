@@ -1,0 +1,16 @@
+{
+  "name": "jeanieiq-employee-app",
+  "private": true,
+  "description": "JeanieIQ Employee: native iOS and Android shell around the platform's /employee web app.",
+  "scripts": {
+    "sync": "cap sync"
+  },
+  "dependencies": {
+    "@capacitor/core": "^8.6.0"
+  },
+  "devDependencies": {
+    "@capacitor/android": "^8.6.0",
+    "@capacitor/cli": "^8.6.0",
+    "@capacitor/ios": "^8.6.0"
+  }
+}

@@ -1,0 +1,190 @@
+# Codemagic builds for the JeanieIQ Locum and JeanieIQ Employee apps.
+# Copied from the MiJeanie app's codemagic.yaml; one iOS and one Android workflow per app.
+# Builds upload to TestFlight / Play internal testing only. Public release stays a manual
+# step in App Store Connect and Play Console.
+# A build runs only when a change on main touches that app's folder (web changes reach
+# phones without a rebuild, because each app loads the live site).
+
+definitions:
+  ios_scripts: &ios_scripts
+    - name: Find the App Store Connect app for this bundle id
+      script: |
+        # Fails here, with Apple's reason, if the app record does not exist yet or the
+        # "JeanieIQ" key cannot see it, instead of failing at upload.
+        APP_ID=$(app-store-connect apps list \
+          --bundle-id-identifier "$BUNDLE_ID" --strict-match-identifier --json \
+          | python3 -c 'import json,sys; a=json.load(sys.stdin); print(a[0]["id"] if a else "")')
+        if [ -z "$APP_ID" ]; then
+          echo "No App Store Connect app has bundle id $BUNDLE_ID. Create it in App Store Connect first."
+          exit 1
+        fi
+        echo "APP_STORE_APPLE_ID=$APP_ID" >> $CM_ENV
+    - name: Install dependencies
+      script: npm ci
+    - name: Sync Capacitor (copies www/ and the config into the iOS project)
+      script: npx cap sync ios
+    - name: Set up code signing
+      script: xcode-project use-profiles
+    - name: Set the build number
+      script: |
+        # Apple rejects a build number it has already seen: take the latest on TestFlight + 1.
+        LATEST=$(app-store-connect get-latest-testflight-build-number "$APP_STORE_APPLE_ID" || true)
+        echo "Latest TestFlight build number reported by Apple: ${LATEST:-none}"
+        case "$LATEST" in ''|*[!0-9]*) LATEST=0 ;; esac
+        cd ios/App
+        agvtool new-version -all $((LATEST + 1))
+    - name: Build iOS IPA
+      script: |
+        xcode-project build-ipa \
+          --project ios/App/App.xcodeproj \
+          --scheme App
+
+  android_scripts: &android_scripts
+    - name: Install dependencies
+      script: npm ci
+    - name: Sync Capacitor (copies www/ and the config into the Android project)
+      script: npx cap sync android
+    - name: Set the version code
+      script: |
+        # Google rejects a version code it has already seen: take the highest on any track + 1.
+        # The credentials are stored base64-encoded; this command wants plain JSON.
+        export GOOGLE_PLAY_SERVICE_ACCOUNT_CREDENTIALS="$(printf '%s' "$GCLOUD_SERVICE_ACCOUNT_CREDENTIALS" | base64 --decode)"
+        LATEST=$(google-play get-latest-build-number --package-name "$PACKAGE_NAME" --credentials @env:GOOGLE_PLAY_SERVICE_ACCOUNT_CREDENTIALS || true)
+        echo "Latest version code reported by Google Play: ${LATEST:-none}"
+        case "$LATEST" in ''|*[!0-9]*) LATEST=0 ;; esac
+        echo "VERSION_CODE=$((LATEST + 1))" >> $CM_ENV
+    - name: Build Android App Bundle
+      script: |
+        cd android
+        chmod +x gradlew
+        ./gradlew bundleRelease
+
+  ios_publishing: &ios_publishing
+    app_store_connect:
+      auth: integration
+      submit_to_testflight: false
+      submit_to_app_store: false
+
+  android_publishing: &android_publishing
+    google_play:
+      credentials: $GCLOUD_SERVICE_ACCOUNT_CREDENTIALS
+      track: internal
+      submit_as_draft: true
+
+workflows:
+  locum-ios:
+    name: JeanieIQ Locum iOS
+    max_build_duration: 60
+    instance_type: mac_mini_m2
+    working_directory: locum
+    triggering:
+      events: [push]
+      branch_patterns:
+        - pattern: main
+          include: true
+          source: true
+    when:
+      changeset:
+        includes: ['locum/ios/**', 'locum/www/**', 'locum/capacitor.config.json', 'locum/package.json', 'locum/package-lock.json', 'codemagic.yaml']
+    integrations:
+      app_store_connect: JeanieIQ
+    environment:
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: com.jeanieiq.locum.dev
+      vars:
+        BUNDLE_ID: com.jeanieiq.locum.dev
+      node: 22
+      xcode: latest
+    scripts: *ios_scripts
+    artifacts:
+      - build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
+    publishing: *ios_publishing
+
+  locum-android:
+    name: JeanieIQ Locum Android
+    max_build_duration: 60
+    # The Linux machines are not in this Codemagic plan; the Mac builds Android too.
+    instance_type: mac_mini_m2
+    working_directory: locum
+    triggering:
+      events: [push]
+      branch_patterns:
+        - pattern: main
+          include: true
+          source: true
+    when:
+      changeset:
+        includes: ['locum/android/**', 'locum/www/**', 'locum/capacitor.config.json', 'locum/package.json', 'locum/package-lock.json', 'codemagic.yaml']
+    environment:
+      android_signing:
+        - jeanieiq_locum_upload
+      groups:
+        - jeanieiq_google_play
+      vars:
+        PACKAGE_NAME: com.jeanieiq.locum
+      node: 22
+      java: 21
+    scripts: *android_scripts
+    artifacts:
+      - android/app/build/outputs/bundle/release/*.aab
+    publishing: *android_publishing
+
+  employee-ios:
+    name: JeanieIQ Employee iOS
+    max_build_duration: 60
+    instance_type: mac_mini_m2
+    working_directory: employee
+    triggering:
+      events: [push]
+      branch_patterns:
+        - pattern: main
+          include: true
+          source: true
+    when:
+      changeset:
+        includes: ['employee/ios/**', 'employee/www/**', 'employee/capacitor.config.json', 'employee/package.json', 'employee/package-lock.json', 'codemagic.yaml']
+    integrations:
+      app_store_connect: JeanieIQ
+    environment:
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: com.jeanieiq.employee.dev
+      vars:
+        BUNDLE_ID: com.jeanieiq.employee.dev
+      node: 22
+      xcode: latest
+    scripts: *ios_scripts
+    artifacts:
+      - build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
+    publishing: *ios_publishing
+
+  employee-android:
+    name: JeanieIQ Employee Android
+    max_build_duration: 60
+    instance_type: mac_mini_m2
+    working_directory: employee
+    triggering:
+      events: [push]
+      branch_patterns:
+        - pattern: main
+          include: true
+          source: true
+    when:
+      changeset:
+        includes: ['employee/android/**', 'employee/www/**', 'employee/capacitor.config.json', 'employee/package.json', 'employee/package-lock.json', 'codemagic.yaml']
+    environment:
+      android_signing:
+        - jeanieiq_employee_upload
+      groups:
+        - jeanieiq_google_play
+      vars:
+        PACKAGE_NAME: com.jeanieiq.employee
+      node: 22
+      java: 21
+    scripts: *android_scripts
+    artifacts:
+      - android/app/build/outputs/bundle/release/*.aab
+    publishing: *android_publishing
