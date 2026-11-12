@@ -6,6 +6,7 @@
     "sync": "cap sync"
   },
   "dependencies": {
+    "@capacitor-firebase/messaging": "^8.6.0",
     "@capacitor/core": "^8.6.0"
   },
   "devDependencies": {
