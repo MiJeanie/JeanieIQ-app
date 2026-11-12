@@ -121,7 +121,7 @@ workflows:
       android_signing:
         - jeanieiq_locum_upload
       groups:
-        - jeanieiq_google_play
+        - google_play
       vars:
         PACKAGE_NAME: com.jeanieiq.locum
       node: 22
@@ -179,7 +179,7 @@ workflows:
       android_signing:
         - jeanieiq_employee_upload
       groups:
-        - jeanieiq_google_play
+        - google_play
       vars:
         PACKAGE_NAME: com.jeanieiq.employee
       node: 22

@@ -42,24 +42,28 @@ TestFlight or Play internal testing as a draft. Nothing is released to the publi
 
 One-time setup, all outside this repo:
 
-1. **Apple (App Store Connect):** create an app for `com.jeanieiq.locum.dev` and one for
-   `com.jeanieiq.employee.dev`. The iOS workflows use the App Store Connect key integration
-   named `JeanieIQ` (the same one the MiJeanie build uses) and look the app up by bundle id.
-2. **Google Play Console:** create the two apps (`com.jeanieiq.locum`,
-   `com.jeanieiq.employee`) with Play App Signing on.
+1. **Apple:** an App Store Connect app for each `.dev` bundle id, and an App Store
+   provisioning profile for each, signed with the team's distribution certificate and fetched
+   into Codemagic (Code signing identities, iOS provisioning profiles). Codemagic does not
+   create profiles itself; without one the build stops with "No matching profiles found".
+   The iOS workflows use the App Store Connect key integration named `JeanieIQ` (the same one
+   the MiJeanie build uses) and look the app up by bundle id.
+2. **Google Play Console:** the two apps (`com.jeanieiq.locum`, `com.jeanieiq.employee`) in
+   the company's Play account, with Play App Signing on.
 3. **Codemagic, Team settings:**
    - Android keystores: an upload keystore for each app, reference names
      `jeanieiq_locum_upload` and `jeanieiq_employee_upload`. Keep a safe copy; Google holds
      the real app-signing key, these only sign uploads.
-   - Environment variable group `jeanieiq_google_play` with
-     `GCLOUD_SERVICE_ACCOUNT_CREDENTIALS` = the base64 of a Google Cloud service account's
-     JSON key, invited in Play Console with release access to both apps (testing tracks only).
+   - Play access uses the existing environment variable group `google_play` (the MiJeanie
+     build's). Its service account holds "Release apps to testing tracks" at account level in
+     the Play account, so it covers every app there, and cannot release to production.
 4. **First Android upload by hand:** Google accepts API uploads only after the first bundle of
    a new app has been uploaded in Play Console. Download the `.aab` from the first Codemagic
    build and upload it once.
+5. **Webhook:** the app is connected to Codemagic by SSH address with a deploy key, so pushes
+   reach it only through the GitHub webhook to Codemagic's hook URL for this app.
 
-None of the workflows has run yet. The first run of each proves the config, including the
-App Store Connect lookup by bundle id.
+Both iOS workflows have built and uploaded to TestFlight. The Android workflows have not run.
 
 ## Icons and splash screens
 
