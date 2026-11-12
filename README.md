@@ -51,9 +51,10 @@ One-time setup, all outside this repo:
 2. **Google Play Console:** the two apps (`com.jeanieiq.locum`, `com.jeanieiq.employee`) in
    the company's Play account, with Play App Signing on.
 3. **Codemagic, Team settings:**
-   - Android keystores: an upload keystore for each app, reference names
-     `jeanieiq_locum_upload` and `jeanieiq_employee_upload`. Keep a safe copy; Google holds
-     the real app-signing key, these only sign uploads.
+   - Android keystore: both apps sign uploads with the existing `mijeanie_upload` keystore
+     (the MiJeanie build's). Google allows one upload key across apps; with Play App Signing
+     Google holds each app's real signing key, and a lost or leaked upload key is reset
+     through Play support.
    - Play access uses the existing environment variable group `google_play` (the MiJeanie
      build's). Its service account holds "Release apps to testing tracks" at account level in
      the Play account, so it covers every app there, and cannot release to production.

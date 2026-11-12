@@ -119,7 +119,7 @@ workflows:
         includes: ['locum/android/**', 'locum/www/**', 'locum/capacitor.config.json', 'locum/package.json', 'locum/package-lock.json', 'codemagic.yaml']
     environment:
       android_signing:
-        - jeanieiq_locum_upload
+        - mijeanie_upload
       groups:
         - google_play
       vars:
@@ -177,7 +177,7 @@ workflows:
         includes: ['employee/android/**', 'employee/www/**', 'employee/capacitor.config.json', 'employee/package.json', 'employee/package-lock.json', 'codemagic.yaml']
     environment:
       android_signing:
-        - jeanieiq_employee_upload
+        - mijeanie_upload
       groups:
         - google_play
       vars:
