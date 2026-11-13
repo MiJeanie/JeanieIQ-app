@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The dev servers use the JeanieIQ Dev CA, installed by each tester as a user certificate. Trusted for dev.jeanieiq.com only. -->
+<network-security-config>
+    <domain-config>
+        <domain includeSubdomains="true">dev.jeanieiq.com</domain>
+        <trust-anchors>
+            <certificates src="system" />
+            <certificates src="user" />
+        </trust-anchors>
+    </domain-config>
+</network-security-config>
